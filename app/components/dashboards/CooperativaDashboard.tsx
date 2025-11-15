@@ -12,9 +12,12 @@ import {
   Menu,
   X,
   BarChart3,
-  MapPin
+  MapPin,
+  ShieldCheck,
+  Building2
 } from 'lucide-react';
-
+import GestionUsuarios from '../../dashboard/Cooperativa/components/GestionUsuarios';
+import GestionCooperativas from '../../dashboard/Cooperativa/components/GestionCooperativas';
 export default function CooperativaDashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeSection, setActiveSection] = useState('overview');
@@ -29,11 +32,13 @@ export default function CooperativaDashboard() {
 
   const menuItems = [
     { id: 'overview', label: 'Resumen', icon: BarChart3 },
+     { id: 'cooperativas', label: 'Cooperativas', icon: Building2 },
     { id: 'buses', label: 'Gestión de Buses', icon: Bus },
     { id: 'drivers', label: 'Conductores', icon: Users },
     { id: 'routes', label: 'Rutas', icon: Route },
     { id: 'schedule', label: 'Horarios', icon: Calendar },
     { id: 'reports', label: 'Reportes', icon: TrendingUp },
+    { id: 'usuarios', label: 'Usuarios', icon: ShieldCheck },
     { id: 'settings', label: 'Configuración', icon: Settings },
   ];
 
@@ -207,8 +212,13 @@ export default function CooperativaDashboard() {
               </div>
             </div>
           )}
+          {activeSection === 'cooperativas' && (
+          <GestionCooperativas />
+          )}
 
-          {/* Otras secciones similares */}
+          {activeSection === 'usuarios' && (
+            <GestionUsuarios />
+          )}
         </div>
       </main>
     </div>

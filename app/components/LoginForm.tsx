@@ -1,10 +1,9 @@
 'use client';
-
 import { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-
+import { authAPI } from '../services/api';
 export default function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -19,23 +18,26 @@ export default function LoginForm() {
     setError('');
     setLoading(true);
 
-    // Aquí irá tu lógica de autenticación
     try {
-      // Simulación de API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Llamar a tu API real
+      const response = await authAPI.login({ email, password });
       
-      // TODO: Implementar llamada a tu API
-      console.log('Login:', { email, password });
+      // Guardar el token y datos del usuario
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('user', JSON.stringify(response));
       
-    if (selectedRole === 'CLIENTE') {
-  router.push('/dashboard/Cliente');
-} else if (selectedRole === 'COOPERATIVA') {
-  router.push('/dashboard/Cooperativa');
-} else if (selectedRole === 'OFICINISTA') {
-  router.push('/dashboard/Oficinista');
-}
+      // Redirigir según el rol que devuelve el backend
+      const roleToRoute: Record<string, string> = {
+        'ADMIN': '/dashboard/Cooperativa',
+        'CLIENTE': '/dashboard/Cliente',
+        'OFICINISTA': '/dashboard/Oficinista',
+      };
+
+      const route = roleToRoute[response.rol] || '/dashboard/Cliente';
+      router.push(route);
+      
     } catch (err) {
-      setError('Credenciales incorrectas');
+      setError(err instanceof Error ? err.message : 'Credenciales incorrectas');
     } finally {
       setLoading(false);
     }
@@ -57,50 +59,6 @@ export default function LoginForm() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Role Selection - SOLO PARA PRUEBAS */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tipo de Usuario (Demo)
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => setSelectedRole('CLIENTE')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  selectedRole === 'CLIENTE'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                Cliente
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedRole('OFICINISTA')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  selectedRole === 'OFICINISTA'
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                Oficinista
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedRole('COOPERATIVA')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  selectedRole === 'COOPERATIVA'
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                Cooperativa
-              </button>
-            </div>
-            <p className="text-xs text-gray-500 mt-2">
-              ⚠️ Solo para pruebas. Selecciona el rol que quieres probar.
-            </p>
-          </div>
 
           {/* Email Field */}
           <div>
@@ -187,3 +145,5 @@ export default function LoginForm() {
     </div>
   );
 }
+//cliente@test.com
+//admin@test.com

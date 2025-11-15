@@ -4,8 +4,11 @@ import { useState } from 'react';
 import { Mail, Lock, User, CreditCard, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { authAPI } from '../services/api';
 
 export default function RegisterForm() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     nombre: '',
     apellido: '',
@@ -31,7 +34,7 @@ export default function RegisterForm() {
     }
 
     if (!formData.cedula.trim()) {
-      newErrors.cedula = 'Please enter your full name';
+      newErrors.cedula = 'Campo Obligatorio';
     } else if (!/^\d{10}$/.test(formData.cedula)) {
       newErrors.cedula = 'La cédula debe tener 10 dígitos';
     }
@@ -66,16 +69,26 @@ export default function RegisterForm() {
     setLoading(true);
 
     try {
-      // Simulación de API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Llamar a la API real
+      const response = await authAPI.register({
+        nombre: formData.nombre,
+        apellido: formData.apellido,
+        cedula: formData.cedula,
+        email: formData.email,
+        password: formData.password,
+      });
       
-      // TODO: Implementar llamada a tu API
-      console.log('Register:', formData);
+      // Guardar el token y datos del usuario
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('user', JSON.stringify(response));
       
-      // Redirigir después del registro exitoso
-      // router.push('/login');
+      // Redirigir al dashboard del cliente (todos los nuevos usuarios son CLIENTE)
+      router.push('/dashboard/Cliente');
+      
     } catch (err) {
-      setErrors({ general: 'Error al registrar usuario' });
+      setErrors({ 
+        general: err instanceof Error ? err.message : 'Error al registrar usuario' 
+      });
     } finally {
       setLoading(false);
     }
@@ -97,7 +110,6 @@ export default function RegisterForm() {
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 my-8">
         <div className="flex flex-col items-center mb-6">
           <div className="w-20 h-20 mb-3 relative">
-
             <Image 
               src="/usuario.png" 
               alt="AndinaBus Logo" 
@@ -108,12 +120,19 @@ export default function RegisterForm() {
           </div>
           <h1 className="text-2xl font-bold text-gray-800">Registro</h1>
           <p className="text-gray-500 text-sm mt-1">
-            Ya tienes una cuenta?{' '}
+            ¿Ya tienes una cuenta?{' '}
             <Link href="/login" className="text-blue-600 hover:text-blue-700 font-semibold">
-              Inicia Sesion
+              Inicia Sesión
             </Link>
           </p>
         </div>
+
+        {/* Error general */}
+        {errors.general && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-600 text-sm">{errors.general}</p>
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -133,7 +152,7 @@ export default function RegisterForm() {
                 className={`w-full pl-10 pr-4 py-2.5 border ${
                   errors.nombre ? 'border-red-500' : 'border-gray-300'
                 } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition`}
-                placeholder=""
+                placeholder="Nombre"
               />
             </div>
             {errors.nombre && (
@@ -157,7 +176,7 @@ export default function RegisterForm() {
                 className={`w-full pl-10 pr-4 py-2.5 border ${
                   errors.apellido ? 'border-red-500' : 'border-gray-300'
                 } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition`}
-                placeholder=""
+                placeholder="Apellido"
               />
             </div>
             {errors.apellido && (
@@ -168,7 +187,7 @@ export default function RegisterForm() {
           {/* Cédula */}
           <div>
             <label htmlFor="cedula" className="block text-sm font-medium text-gray-700 mb-1">
-              Cedula
+              Cédula
             </label>
             <div className="relative">
               <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -206,7 +225,7 @@ export default function RegisterForm() {
                 className={`w-full pl-10 pr-4 py-2.5 border ${
                   errors.email ? 'border-red-500' : 'border-gray-300'
                 } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition`}
-                placeholder=""
+                placeholder="tu@email.com"
               />
             </div>
             {errors.email && (
@@ -217,7 +236,7 @@ export default function RegisterForm() {
           {/* Password */}
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
+              Contraseña
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -230,7 +249,7 @@ export default function RegisterForm() {
                 className={`w-full pl-10 pr-12 py-2.5 border ${
                   errors.password ? 'border-red-500' : 'border-gray-300'
                 } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition`}
-                placeholder=""
+                placeholder="••••••••"
               />
               <button
                 type="button"
@@ -248,7 +267,7 @@ export default function RegisterForm() {
           {/* Confirm Password */}
           <div>
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-              Confirm password
+              Confirmar Contraseña
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -261,7 +280,7 @@ export default function RegisterForm() {
                 className={`w-full pl-10 pr-12 py-2.5 border ${
                   errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
                 } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition`}
-                placeholder=""
+                placeholder="••••••••"
               />
               <button
                 type="button"

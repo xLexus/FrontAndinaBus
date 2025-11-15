@@ -103,7 +103,7 @@ export default function SeleccionAsientos() {
 
       {/* Modal de Pago */}
       {mostrarModalPago && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50">
           <div className="bg-white w-[400px] rounded-2xl shadow-xl p-6 relative">
             {/* Botón X */}
             <button
@@ -201,4 +201,18 @@ export default function SeleccionAsientos() {
       )}
     </div>
   );
+  {mostrarModalPago && (
+  <div
+    className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
+    onClick={() => setMostrarModalPago(false)}
+  >
+    <div
+      className="bg-white w-[400px] rounded-2xl shadow-xl p-6 relative"
+      onClick={(e) => e.stopPropagation()} // evita que el clic dentro cierre el modal
+    >
+      {/* contenido del modal */}
+    </div>
+  </div>
+)}
+
 }
